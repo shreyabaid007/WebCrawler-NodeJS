@@ -6,7 +6,7 @@ var http = require('http');
 var Crawler = require("js-crawler");
 var fs =require('fs');
 var Chart = require('cli-chart');
-
+var csvWriter = require('csv-write-stream');
 var dict = {};
 global.urls=[];
 global.domains=[];
@@ -27,9 +27,10 @@ var crawler = new Crawler().configure({
  
 //onSuccess callback will be called for each page that the crawler has crawled.
 .crawl({
-  url: "https://google.com",
+  url: "https://medium.com",
   success: function(page ) {
     urls.push(page.url);
+    urls.push("\n");
     console.log(page.url);
    
     var parsedUrl = url.parse(page.url, true, true);
@@ -38,14 +39,22 @@ var crawler = new Crawler().configure({
     unique_urls=(_.uniq(urls));        //getting urls
 
     //My assumption--> Crawler will crawl only 100 links and will stop
-    if(urls.length==100){create_report(res,unique_domains,domains); 
+    if(unique_urls.length==100){create_report(res,unique_domains,domains,unique_urls); 
       process.exit();
   }
+
+  fs.writeFile("outputfile.csv", urls, function(err) {
+    if(err) {
+        return console.log(err);
+    }
+  }); 
+
+
 }
 });
 
 //this function creates dictionary having key: domains and value: no.of domains
-function create_report(res,unique_domains,domains){
+function create_report(res,unique_domains,domains,unique_urls){
 
   //TODO: with plotly: nothing displayed on UI 
 
